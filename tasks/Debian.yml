@@ -1,0 +1,14 @@
+---
+# tasks file for openvpn (Debian specific)
+- name: Install OpenVPN packages
+  become: yes
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+    cache_valid_time: 86400
+  with_items:
+    - "{{ openvpn_packages }}"
+  tags:
+    - openvpn
+

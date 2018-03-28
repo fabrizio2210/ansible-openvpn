@@ -1,0 +1,94 @@
+---
+# tasks file for openvpn
+- name: Imposta nome log server
+  set_fact:
+    openvpn_log: /var/log/openvpn-server-{{openvpn_server_name}}.log
+
+# Set ip forwarding on in /proc and in the sysctl file and reload if necessary
+- sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+# Maschera l'IP sorgente che e' di VPN
+- iptables:
+    table: nat
+    chain: POSTROUTING
+    out_interface: "{{ ansible_default_ipv4.interface }}"
+    source: "{{ openvpn_server_subnet }}/{{ openvpn_server_subnet_mask }}"
+    jump: MASQUERADE
+    comment: Maschera traffico da VPN
+  notify: save iptables
+
+- name: Creazione del certificato con easy_rsa
+  include_role:
+    name: easy_rsa
+  vars:
+    easy_rsa_servers:
+      - "server-{{ openvpn_server_name }}"
+  delegate_to: 127.0.0.1
+
+- name: Copia della CA
+  copy:
+    src: "easy_rsa/keys/ca.crt"
+    dest: "/etc/openvpn/ca.crt"
+    mode: 0644
+  when: not openvpn_static
+  notify: restart openvpn
+  tags:
+    - openvpn
+
+- name: Get contents of CA certificate
+  become: yes
+  slurp:
+    src: /etc/openvpn/ca.crt
+  register: openvpn_ca_certificate
+  when: not openvpn_static
+  tags:
+    - openvpn
+
+- name: Copia del Diffie Helmann per il server
+  copy: 
+    src: "easy_rsa/keys/dh{{ easy_rsa_key_size }}.pem"
+    dest: "/etc/openvpn/dh{{ easy_rsa_key_size }}-{{ openvpn_server_name }}.pem"
+    mode: 0644
+  when: not openvpn_static
+  notify: restart openvpn
+
+- name: Copia del certificato server
+  copy: 
+    src: "easy_rsa/keys/server-{{ openvpn_server_name }}.crt"
+    dest: "/etc/openvpn/server-{{ openvpn_server_name }}.crt"
+    mode: 0644
+  when: not openvpn_static
+  notify: restart openvpn
+
+- name: Copia della chiave del certificato server
+  copy: 
+    src: "easy_rsa/keys/server-{{ openvpn_server_name }}.key"
+    dest: "/etc/openvpn/server-{{ openvpn_server_name }}.key"
+    mode: 0600
+  when:  not openvpn_static
+  notify: restart openvpn
+
+- name: Create client configuration template
+  become: yes
+  template:
+    src: client.ovpn.j2
+    dest: /etc/openvpn/client.ovpn
+    owner: root
+    group: root
+    mode: 0644
+  when: not openvpn_static
+
+- name: Create OpenVPN server configuration file
+  template:
+    src: server.conf.j2
+    dest: /etc/openvpn/server.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart openvpn

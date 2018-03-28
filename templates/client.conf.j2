@@ -1,14 +1,11 @@
 # {{ ansible_managed }}
-
 {% if openvpn_auth_enable %}
 auth-user-pass
 {% endif %}
 {% if openvpn_comp_lzo %}
 comp-lzo
 {% endif %}
-{% if openvpn_daemon %}
-daemon
-{% endif %}
+client
 dev {{ openvpn_dev }}
 group {{ openvpn_group }}
 {% if openvpn_static %}
@@ -32,6 +29,9 @@ persist-tun
 {% if openvpn_ping_timer_rem %}
 ping-timer-rem
 {% endif %}
+{% if openvpn_ping %}
+ping {{ openvpn_ping }}
+{% endif %}
 proto {{ openvpn_proto }}
 {% if openvpn_pull %}
 pull
@@ -53,16 +53,27 @@ verb {{ openvpn_verb }}
 
 {% if openvpn_ca_certificate %}
 <ca>
-{{ openvpn_ca_certificate }}
+{{ openvpn_ca_certificate.content | b64decode -}}
 </ca>
 {% endif %}
 {% if openvpn_client_certificate %}
-<cert>
-{{ openvpn_client_certificate }}
-</cert>
+cert {{ openvpn_client_certificate }}
+{% endif %}
+{% if openvpn_client_topology %}
+topology {{ openvpn_client_topology }}
 {% endif %}
 {% if openvpn_client_key %}
 <key>
 {{ openvpn_client_key }}
 </key>
+{% else %}
+key /etc/openvpn/client-{{ openvpn_client_name }}-{{ openvpn_server_name }}.key
 {% endif %}
+{% if openvpn_log %}
+log {{ openvpn_log }}
+{% endif %}
+
+
+
+
+

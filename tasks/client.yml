@@ -1,0 +1,81 @@
+---
+# tasks file for client
+
+- name: Imposta nome log client
+  set_fact:
+    openvpn_log: /var/log/openvpn-client-{{openvpn_client_name}}-{{openvpn_server_name}}.log
+
+# Set ip forwarding on in /proc and in the sysctl file and reload if necessary
+- sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: Maschera l'IP sorgente che e' di VPN
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    out_interface: "tun+"
+    jump: MASQUERADE
+    comment: Maschera traffico verso VPN
+  notify: save iptables
+
+
+- name: Creazione del certificato con easy_rsa
+  include_role:
+    name: easy_rsa
+  vars:
+    easy_rsa_clients:
+      - "client-{{ openvpn_client_name }}-{{ openvpn_server_name }}"
+  delegate_to: 127.0.0.1
+
+- name: Copia della CA
+  copy:
+    src: "easy_rsa/keys/ca.crt"
+    dest: "/etc/openvpn/ca.crt"
+    mode: 0644
+  when: not openvpn_static
+  notify: restart openvpn
+  tags:
+    - openvpn
+
+- name: Get contents of CA certificate
+  slurp:
+    src: /etc/openvpn/ca.crt
+  register: openvpn_ca_certificate
+  when: not openvpn_static
+  tags:
+    - openvpn
+
+- name: Copia della chiave del certificato client
+  copy: 
+    src: "easy_rsa/keys/client-{{ openvpn_client_name }}-{{ openvpn_server_name }}.key"
+    dest: "/etc/openvpn/client-{{ openvpn_client_name }}-{{ openvpn_server_name }}.key"
+    mode: 0600
+  when: not openvpn_static
+  notify: restart openvpn
+
+- name: Copia del del certificato client
+  copy: 
+    src: "easy_rsa/keys/client-{{ openvpn_client_name }}-{{ openvpn_server_name }}.crt"
+    dest: "/etc/openvpn/client-{{ openvpn_client_name }}-{{ openvpn_server_name }}.crt"
+    mode: 0600
+  when: not openvpn_static
+  notify: restart openvpn
+
+- name: set client certificate path
+  set_fact:
+    openvpn_client_certificate: "/etc/openvpn/client-{{ openvpn_client_name }}-{{ openvpn_server_name }}.crt"
+  when: not openvpn_static
+
+- name: Create OpenVPN client configuration file
+  template:
+    src: client.conf.j2
+    dest: "/etc/openvpn/client-{{ openvpn_client_name }}-{{ openvpn_server_name }}.conf"
+    owner: root
+    group: root
+    mode: 0640
+  notify:
+    - restart openvpn
