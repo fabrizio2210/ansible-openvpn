@@ -24,7 +24,7 @@
 
 
 - name: Creazione del certificato con easy_rsa
-  include_role:
+  import_role:
     name: easy_rsa
   vars:
     easy_rsa_clients:
@@ -79,3 +79,4 @@
     mode: 0640
   notify:
     - restart openvpn
+    - reload systemd

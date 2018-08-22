@@ -23,12 +23,12 @@
   notify: save iptables
 
 - name: Creazione del certificato con easy_rsa
-  include_role:
+  import_role:
     name: easy_rsa
+  delegate_to: localhost
   vars:
     easy_rsa_servers:
       - "server-{{ openvpn_server_name }}"
-  delegate_to: 127.0.0.1
 
 - name: Copia della CA
   copy:

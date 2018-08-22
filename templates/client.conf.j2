@@ -3,7 +3,7 @@
 auth-user-pass
 {% endif %}
 {% if openvpn_comp_lzo %}
-comp-lzo
+comp-lzo {{ openvpn_comp_lzo }}
 {% endif %}
 client
 dev {{ openvpn_dev }}
@@ -44,7 +44,7 @@ remote {{ openvpn_remote_host }} {{ openvpn_remote_port }} {{ openvpn_remote_pro
 resolv-retry {{ openvpn_resolv_retry }}
 {% endif %}
 {% if not openvpn_static %}
-tls-client
+remote-cert-tls server
 {% endif %}
 user {{ openvpn_user }}
 {% if openvpn_verb %}

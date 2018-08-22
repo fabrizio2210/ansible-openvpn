@@ -3,7 +3,7 @@
 
 - name: reload systemd
   become: yes
-  command: systemctl daemon-reload
+  shell: "[ -f /bin/systemctl ] && systemctl daemon-reload || exit 0"
   tags:
     - openvpn
 

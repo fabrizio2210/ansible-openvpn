@@ -1,8 +1,6 @@
 openvpn
 =======
 
-[![Build Status](https://travis-ci.org/kbrebanov/ansible-openvpn.svg?branch=master)](https://travis-ci.org/kbrebanov/ansible-openvpn)
-
 Installs and configures OpenVPN
 
 Requirements
