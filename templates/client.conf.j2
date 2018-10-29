@@ -7,7 +7,9 @@ comp-lzo {{ openvpn_comp_lzo }}
 {% endif %}
 client
 dev {{ openvpn_dev }}
+{% if openvpn_group %}
 group {{ openvpn_group }}
+{% endif %}
 {% if openvpn_static %}
 ifconfig {{ openvpn_client_ifconfig }}
 {% endif %}
@@ -46,7 +48,9 @@ resolv-retry {{ openvpn_resolv_retry }}
 {% if not openvpn_static %}
 remote-cert-tls server
 {% endif %}
+{% if openvpn_user %}
 user {{ openvpn_user }}
+{% endif %}
 {% if openvpn_verb %}
 verb {{ openvpn_verb }}
 {% endif %}
