@@ -20,11 +20,9 @@
 - name: Install OpenVPN packages
   become: yes
   apt:
-    name: "{{ item }}"
+    name: "{{ openvpn_packages }}"
     state: present
     update_cache: yes
-  with_items:
-    - "{{ openvpn_packages }}"
   tags:
     - openvpn
 
