@@ -1,4 +1,5 @@
 ---
+#TODO update with new repos https://community.openvpn.net/openvpn/wiki/OpenvpnSoftwareRepos?__cf_chl_jschl_tk__=6afa67a532ad558f5089efc31f1bcdd8611dee1c-1609935578-0-AYQ3PL674_CxNrJOZgVZ7_fcE97rGdcITpC_RDEBdTHOjPVTOOpmxHKgXZYL5Sftcw5JEI_hJbUxexg1TArjkvtK2Oy1jga_aOpRJUGIT1zBRkdQv-UrS_R3zw6E_P47zpu47_MhaNA3CpoUaaBCdnxWqD6NXVX6uNIRWVoacZMoLZLD57Fthxy7A-aidtLhewg8H5hBVSUF0bGC4ejXnGlKGIlSPyocL_h45TDBNWpL-GCHoW0XOjbS27Xtgfr2GOOK5zLFz_6H2q6hCcHiulqeqxRa4UxkLFrWWRO8bD5-EhfMJ8JxzhqLazSGNdz3uvMqIdzeSKYXHMy5uY7FfabRM1Nmz8iyA3vPGniZz59I
 # tasks file for openvpn (Ubuntu specific)
 
 - name: Install OpenVPN GPG key
@@ -8,6 +9,7 @@
     state: present
   tags:
     - openvpn
+  when: ansible_distribution_version is version('20.04', '<')
 
 - name: Add OpenVPN repository
   become: yes
@@ -16,6 +18,7 @@
     state: present
   tags:
     - openvpn
+  when: ansible_distribution_version is version('20.04', '<')
 
 - name: Install OpenVPN packages
   become: yes
