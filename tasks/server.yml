@@ -22,12 +22,13 @@
     comment: Maschera traffico da VPN
   notify: save iptables
 
-- name: Installazione pacchetti easy_rsa
+- name: Check pacchetti easy_rsa
   import_role:
     name: easy_rsa
     tasks_from: Ubuntu.yml
     vars_from: Ubuntu.yml
   delegate_to: localhost
+  run_once: True
 
 - name: Creazione del certificato con easy_rsa
   import_role:
